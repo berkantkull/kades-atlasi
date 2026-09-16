@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kadeş Atlası · v0.1 — II. Ramses'in MÖ ~1274 Seferi</title>
+
+<!-- Leaflet 1.9.4 (CDN) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root{
+    --mudur:#20242c;        /* kenar çubuğu zemini */
+    --murekkep:#e9e4d8;     /* metin */
+    --akin:#b4532a;         /* toprak kızılı — Mısır yürüyüşü */
+    --hitit:#3d6b8c;        /* çelik mavisi — Hitit taarruzu */
+    --kan:#8f1d1d;          /* muharebe olayları */
+    --altin:#d4a24e;        /* vurgu */
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    display:flex; font-family:"Segoe UI", system-ui, sans-serif;
+    color:var(--murekkep); background:var(--mudur);
+  }
+
+  /* ---------- Kenar çubuğu ---------- */
+  #kenar{
+    width:350px; min-width:350px; height:100vh; overflow-y:auto;
+    padding:22px 20px 30px; border-right:1px solid #343a46;
+  }
+  #kenar h1{
+    font-family:"Palatino Linotype","Book Antiqua",Georgia,serif;
+    font-size:26px; letter-spacing:2px; margin:0; color:#fff;
+  }
+  #kenar h1 span{ color:var(--altin); }
+  .altyazi{
+    font-family:"Palatino Linotype",Georgia,serif; font-style:italic;
+    color:var(--altin); margin:6px 0 14px; font-size:14px;
+  }
+  .giris{ font-size:13.5px; line-height:1.55; color:#cfc9bb; margin:0 0 14px; }
+  .cip{
+    display:inline-block; border:1px solid var(--altin); color:var(--altin);
+    border-radius:4px; padding:3px 8px; font-size:12px; margin:0 0 16px;
+  }
+  h2{
+    font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+    color:#9aa3b2; margin:20px 0 8px; border-bottom:1px solid #343a46; padding-bottom:6px;
+  }
+  ul.etaplar{ list-style:none; margin:0; padding:0; }
+  ul.etaplar li{
+    display:flex; gap:10px; align-items:flex-start; padding:7px 6px;
+    border-radius:6px; cursor:pointer; font-size:13.5px;
+  }
+  ul.etaplar li:hover{ background:#2a2f3a; }
+  .num{
+    flex:0 0 24px; height:24px; border-radius:50%; background:var(--akin);
+    color:#fff; font-size:12px; font-weight:700; display:flex;
+    align-items:center; justify-content:center; border:2px solid #fff3;
+  }
+  .olay-no{
+    flex:0 0 24px; height:24px; border-radius:50%; background:#fff;
+    color:var(--kan); border:2px solid var(--kan); font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .etap-ad{ font-weight:600; }
+  .etap-not{ display:block; font-size:11.5px; color:#9aa3b2; margin-top:1px; }
+  .lejyan{ font-size:12.5px; line-height:1.8; color:#cfc9bb; }
+  .lejyan i{ display:inline-block; width:22px; margin-right:6px; vertical-align:middle; }
+  .cizgi-akin{ border-top:3px dashed var(--akin); }
+  .cizgi-hitit{ border-top:3px dashed var(--hitit); }
+  .dolu{ width:12px; height:12px; border-radius:50%; background:var(--akin); }
+  .yildiz{ color:var(--kan); font-style:normal; font-size:15px; }
+  .dipnot{
+    margin-top:18px; font-size:11.5px; line-height:1.55; color:#8b93a3;
+    border-top:1px solid #343a46; padding-top:12px;
+  }
+
+  /* ---------- Harita ---------- */
+  #harita{ flex:1; height:100vh; }
+
+  /* Harata iğneleri */
+  .etap-ignesi{
+    width:26px; height:26px; border-radius:50%; background:var(--akin);
+    border:2px solid #fff; color:#fff; font:700 12px/1 "Segoe UI",sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 5px rgba(0,0,0,.6);
+  }
+  .olay-ignesi{
+    width:24px; height:24px; border-radius:50%; background:#fff;
+    border:2px solid var(--kan); color:var(--kan); font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 5px rgba(0,0,0,.6);
+  }
+  .baglam-ignesi{
+    width:24px; height:24px; border-radius:50%; background:var(--hitit);
+    border:2px solid #fff; color:#fff; font-size:12px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 5px rgba(0,0,0,.6);
+  }
+  .yaklasik-rozet{
+    display:inline-block; background:#3a2f22; color:var(--altin);
+    border-radius:3px; padding:1px 6px; font-size:10.5px; margin-bottom:5px;
+  }
+  .leaflet-popup-content{ font-size:13px; line-height:1.45; }
+  .leaflet-popup-content h3{ margin:0 0 6px; font-size:14.5px; }
+
+  @media (max-width:820px){
+    body{ flex-direction:column; }
+    #kenar{ width:100%; min-width:0; height:auto; max-height:45vh; }
+    #harita{ height:55vh; }
+  }
+</style>
+</head>
+<body>
+
+<div id="kenar">
+  <h1>KADEŞ <span>ATLASI</span></h1>
+  <div class="altyazi">II. Ramses'in MÖ ~1274 Kadeş Seferi</div>
+
+  <p class="giris">
+    Mısır kaynakları (Pentaur Şiiri, Rapor ve tapınak kabartmaları) temel alınarak
+    hazırlanmış etkileşimli güzergâh gösterimi. Hükümdarlığın 5. yılında, dört tümene
+    bölünen Mısır ordusu Pi-Ramesses'ten yola çıkıp yaklaşık bir ay sonra Asi (Orontes)
+    kıyısındaki Kadeş'e ulaştı.
+  </p>
+  <span class="cip">5. yıl · Shemu 1/9 → 3/9 (≈ 1 aylık yürüyüş)</span>
+
+  <h2>Sefer Etapları</h2>
+  <ul class="etaplar" id="etapListesi"></ul>
+
+  <h2>Muharebe Günü</h2>
+  <ul class="etaplar" id="olayListesi"></ul>
+
+  <h2>Lejant</h2>
+  <div class="lejyan">
+    <div><i class="cizgi-akin"></i> Mısır yürüyüş güzergâhı (rekonstrüksiyon)</div>
+    <div><i class="dolu"></i> Numaralı noktalar: sefer etapları</div>
+    <div><i class="cizgi-hitit"></i> Hitit savaş arabası taarruzu</div>
+    <div><i class="yildiz">✦</i> Muharebe günü olayları</div>
+  </div>
+
+  <div class="dipnot">
+    <b>v0.1 prototip.</b> Koordinatlar temsilîdir; Gazze'nin kuzeyindeki güzergâh,
+    kaynaklardaki etap adlarından hareketle yapılan yaygın rekonstrüksiyondur (kıyı
+    hattı + Bekaa Vadisi). Akademik doğrulama danışman hocayla yapılacaktır.
+    Kaynaklar: Pentaur Şiiri, Rapor (Bulletin), kabartmalar (Ebu Simbel, Karnak,
+    Luksor, Ramesseum, Abydos).
+  </div>
+</div>
+
+<div id="harita"></div>
+
+<script>
+/* =====================================================================
+   VERİ — sefer etapları (1–9) ve muharebe günü olayları
+   Koordinatlar temsilîdir; "yaklasik:true" olanlar özellikle belirsizdir.
+   ===================================================================== */
+const ETAPLAR = [
+  {
+    ad:"Pi-Ramesses (Kantir)", lat:30.886, lng:31.834,
+    not:"Seferin başlangıç noktası",
+    aciklama:"II. Ramses'in Doğu Delta'daki yeni başkenti. Sefer, hükümdarlığın 5. yılında, hasat sonu mevsimi Shemu'nun 1. ayı 9. günü buradan çıktı. Ordu, Amon, Re, Ptah ve Setekh adını taşıyan dört tümene bölünmüştü."
+  },
+  {
+    ad:"Tjaru / Sile (Tell el-Hebua)", lat:30.786, lng:32.282,
+    not:"Mısır'ın sınır kalesi",
+    aciklama:"Mısır'ın kuzeydoğu sınırındaki ana kale; 'Horus Yolları' denen, kuyularla donatılmış Sina askerî hattına buradan girildi."
+  },
+  {
+    ad:"Menphate Kuyuları — Sina hattı", lat:31.10, lng:33.10, yaklasik:true,
+    not:"Sınır kuyuları ve karakollar",
+    aciklama:"Anlatıda adı geçen, orduya su sağlayan kuyu/karakol hattı. Sina'daki duraklar modern araştırmalarla (ör. Tell el-Borg kazıları) eşleştirilir; konum yaklaşık gösterimdir."
+  },
+  {
+    ad:"Gazze", lat:31.504, lng:34.463,
+    not:"Kenan'ın güney kapısı",
+    aciklama:"Kıyı boyunca uzanan uluslararası yolun (sonraki adıyla Via Maris) başlangıcı. Mısır'ın Kenan üzerindeki nüfuzunun anahtar noktası."
+  },
+  {
+    ad:"Yafa", lat:32.054, lng:34.756, yaklasik:true,
+    not:"Kıyı şeridi — rekonstrüksiyon",
+    aciklama:"Akdeniz kıyısı boyunca kuzeye ilerleyiş. Gazze'nin kuzeyindeki duraklar, kaynaklardaki etap adlarından hareketle yapılan rekonstrüksiyona dayanır."
+  },
+  {
+    ad:"Sayda (Sidon) bölgesi", lat:33.557, lng:35.372, yaklasik:true,
+    not:"Finike kıyıları",
+    aciklama:"Finike kıyı şehirleri boyunca ilerleyiş; Mısır'ın bu bölgedeki geleneksel nüfuz alanı."
+  },
+  {
+    ad:"Bekaa Geçişi", lat:34.008, lng:36.204, yaklasik:true,
+    not:"Orontes havzasına giriş",
+    aciklama:"Lübnan ile Anti-Lübnan dağ sıraları arasındaki vadi. Ordu buradan Orontes havzasına inip Kadeş'e güneybatıdan yaklaştı."
+  },
+  {
+    ad:"Şabtuna Geçidi", lat:34.485, lng:36.520, yaklasik:true,
+    not:"Orontes geçidi — kritik an",
+    aciklama:"Asi (Orontes) nehrinin güney geçidi. Burada iki 'Şasu' göçebesi Ramses'e Hitit kralının Halep'te olduğunu söyledi; Ramses kampını Kadeş'in kuzeybatısına kurdu."
+  },
+  {
+    ad:"Kadeş (Tell Nebi Mend)", lat:34.561, lng:36.529,
+    not:"Muharebe alanı",
+    aciklama:"Asi kıyısında stratejik tepe kenti. II. Muvatalli komutasındaki Hitit ordusu kentin arkasında, ağaçların arasında gizlenmişti. MÖ ~1274'te burada tarihin en ayrıntılı belgelenmiş savaşlarından biri yaşandı."
+  }
+];
+
+const OLAYLAR = [
+  {
+    ad:"Sahte istihbarat", lat:34.485, lng:36.535,
+    aciklama:"Muvatalli'nin gönderdiği iki 'Şasu' casusu, Ramses'i Hitit kralının Halep'te kaldığına inandırdı. Amaç: Mısır ordusunu tüm hâldeyken yakalamak."
+  },
+  {
+    ad:"Hitit taarruzu — 2.500 savaş arabası", lat:34.565, lng:36.585,
+    aciklama:"Öğlen saatlerinde 2.500 savaş arabası Orontes'i doğudan gizlice geçti; geçitteki Re tümenini dağıtıp Amon kampına bindirdi."
+  },
+  {
+    ad:"Ramses'in karşı taarruzu", lat:34.573, lng:36.492,
+    aciklama:"Ordusu dağılan Ramses, maiyeti ve yaverleriyle batı kanattan süratle karşı saldırıya geçti; kaynaklarda 'Amon'un kendisini koruması' olarak anlatılan bölüm."
+  },
+  {
+    ad:"Ne'arin birliklerinin varışı", lat:34.526, lng:36.100,
+    aciklama:"Öğleden sonra, Amurru (Tell Kazel civarı) yönünden gelen Ne'arin birlikleri muharebeye yetişti; Ramses kampa geri dönebildi."
+  },
+  {
+    ad:"Halep — casusların iddia ettiği konum", lat:36.202, lng:37.134,
+    aciklama:"Casusların gösterdiği yer. Muvatalli ise ordusuyla çoktan Kadeş'in arkasındaydı."
+  }
+];
+
+const HATTUSAS = {
+  ad:"Hattuşaş (Boğazköy)", lat:40.019, lng:34.615,
+  aciklama:"Hitit başkenti. Kadeş Antlaşması'nın (MÖ ~1259) Boğazköy nüshası 1906'da burada bulundu; bugün İstanbul Arkeoloji Müzeleri'nde. Antlaşmanın bir kopyası BM merkezinde sergilenir."
+};
+
+/* =====================================================================
+   HARİTA
+   ===================================================================== */
+const harita = L.map('harita', { worldCopyJump:true });
+
+const uydu = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom:18, attribution:'Esri, Maxar, Earthstar Geographics'
+});
+const arazi = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom:17, attribution:'© OpenTopoMap (CC-BY-SA)'
+});
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:19, attribution:'© OpenStreetMap katkıcıları'
+});
+uydu.addTo(harita);
+
+L.control.scale({ imperial:false }).addTo(harita);
+
+/* --- Mısır yürüyüş güzergâhı --- */
+const guzergah = L.polyline(
+  ETAPLAR.map(e => [e.lat, e.lng]),
+  { color:'#b4532a', weight:3.5, dashArray:'9 7', opacity:.95 }
+);
+
+/* --- Sefer etapları --- */
+const etapKatmani = L.layerGroup();
+ETAPLAR.forEach((e, i) => {
+  const ig = L.divIcon({
+    className:'', html:`<div class="etap-ignesi">${i+1}</div>`,
+    iconSize:[26,26], iconAnchor:[13,13]
+  });
+  L.marker([e.lat, e.lng], { icon:ig })
+    .bindPopup(`
+      ${e.yaklasik ? '<span class="yaklasik-rozet">yaklaşık konum</span><br>' : ''}
+      <h3>${i+1}. ${e.ad}</h3>${e.aciklama}
+    `)
+    .addTo(etapKatmani);
+});
+guzergah.addTo(etapKatmani);
+
+/* --- Muharebe günü katmanı --- */
+const olayKatmani = L.layerGroup();
+OLAYLAR.forEach(o => {
+  const ig = L.divIcon({
+    className:'', html:'<div class="olay-ignesi">✦</div>',
+    iconSize:[24,24], iconAnchor:[12,12]
+  });
+  L.marker([o.lat, o.lng], { icon:ig })
+    .bindPopup(`<h3>${o.ad}</h3>${o.aciklama}`)
+    .addTo(olayKatmani);
+});
+/* Hitit taarruz oku (doğu → batı) */
+L.polyline(
+  [[34.560, 36.592],[34.568, 36.500]],
+  { color:'#3d6b8c', weight:3.5, dashArray:'4 6', opacity:.95 }
+).bindPopup('<h3>Hitit taarruzu</h3>2.500 savaş arabasının Orontes\'i geçip batıya, Amon kampına yöneldiği hat.').addTo(olayKatmani);
+
+/* --- Bağlam katmanı: Hattuşaş (varsayılan kapalı) --- */
+const baglamKatmani = L.layerGroup();
+const hIg = L.divIcon({
+  className:'', html:'<div class="baglam-ignesi">Ḫ</div>',
+  iconSize:[24,24], iconAnchor:[12,12]
+});
+L.marker([HATTUSAS.lat, HATTUSAS.lng], { icon:hIg })
+  .bindPopup(`<h3>${HATTUSAS.ad}</h3>${HATTUSAS.aciklama}`)
+  .addTo(baglamKatmani);
+
+/* --- Katman denetimi --- */
+L.control.layers(
+  { 'Uydu (Esri)':uydu, 'Arazi (OpenTopoMap)':arazi, 'Sokak (OSM)':osm },
+  { 'Muharebe günü olayları':olayKatmani, 'Bağlam: Hattuşaş':baglamKatmani },
+  { collapsed:false }
+).addTo(harita);
+
+etapKatmani.addTo(harita);
+olayKatmani.addTo(harita);
+
+/* --- İlk görünüm: sefer alanına oturt --- */
+harita.fitBounds(L.latLngBounds(ETAPLAR.map(e => [e.lat, e.lng])).pad(0.15));
+
+/* =====================================================================
+   KENAR ÇUBUĞU LİSTELERİ — tıklayınca uç ve balonu aç
+   ===================================================================== */
+const etapListesi = document.getElementById('etapListesi');
+ETAPLAR.forEach((e, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="num">${i+1}</span>
+    <span><span class="etap-ad">${e.ad}</span>
+    ${e.yaklasik ? '<span class="etap-not">≈ ' : '<span class="etap-not">'}
+    ${e.not}</span></span>`;
+  li.onclick = () => {
+    harita.flyTo([e.lat, e.lng], Math.max(harita.getZoom(), 9));
+    etapKatmani.getLayers()[i].openPopup();
+  };
+  etapListesi.appendChild(li);
+});
+
+const olayListesi = document.getElementById('olayListesi');
+OLAYLAR.forEach((o, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="olay-no">✦</span>
+    <span><span class="etap-ad">${o.ad}</span></span>`;
+  li.onclick = () => {
+    harita.flyTo([o.lat, o.lng], Math.max(harita.getZoom(), 9));
+    olayKatmani.getLayers()[i].openPopup();
+  };
+  olayListesi.appendChild(li);
+});
+</script>
+</body>
+</html>
