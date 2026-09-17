@@ -112,7 +112,13 @@
   .lejyan{ font-size:12.5px; line-height:2; color:#cfc9bb; }
   .lejyan i{ display:inline-block; width:22px; margin-right:6px; vertical-align:middle; }
   .cizgi-akin{ border-top:3px dashed var(--akin); }
-  .cizgi-hitit{ border-top:3px dashed var(--hitit); }
+  .cizgi-hitit{ border-top:3px dotted #2d5774; }
+  .ok-ucu{
+    width:0; height:0;
+    border-left:9px solid transparent; border-right:9px solid transparent;
+    border-bottom:14px solid #2d5774;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));
+  }
   .dolu{ width:12px; height:12px; border-radius:50%; background:var(--akin); }
   .yildiz{ color:var(--kan); font-style:normal; font-size:15px; }
   .yildiz-altin{ color:var(--altin); font-style:normal; font-size:15px; }
@@ -229,8 +235,9 @@
 
   <div class="icerik">
     <div class="bakis">
-      <button id="btnSefer" class="etkin" title="Yürüyüş güzergâhını kadraja al">♞ Sefer Görünümü</button>
-      <button id="btnImparatorluk" title="İki devletin etki alanlarını ve başkentleri kadraja al">🏛 İmparatorluk Görünümü</button>
+      <button id="btnSefer" class="etkin" title="Yürüyüş güzergâhını kadraja al">♞ Sefer</button>
+      <button id="btnMuharebe" title="Kadeş muharebe alanını yakınlaştır: Hitit taarruz hattı ve günün olayları">⚔ Muharebe</button>
+      <button id="btnImparatorluk" title="İki devletin etki alanlarını ve başkentleri kadraja al">🏛 İmparatorluk</button>
     </div>
 
     <h2>Başkentler</h2>
@@ -446,11 +453,23 @@ OLAYLAR.forEach(o => {
     .bindPopup(`<h3>${o.ad}</h3>${o.aciklama}`)
     .addTo(olayKatmani);
 });
-/* Hitit taarruz oku (doğu → batı) */
-L.polyline(
-  [[34.560, 36.592],[34.568, 36.500]],
-  { color:'#3d6b8c', weight:3.5, dashArray:'4 6', opacity:.95 }
-).bindPopup('<h3>Hitit taarruzu</h3>2.500 savaş arabasının Orontes\'i geçip batıya, Amon kampına yöneldiği hat.').addTo(olayKatmani);
+/* Hitit taarruzu (doğu → batı → kuzey): Kadeş'in doğusundaki ağaçlıklardan çıkış,
+   Orontes geçidi, Re tümeninin dağıtılması ve Amon kampına yükselen yay. */
+const hititTarruzHatti = [
+  [34.560, 36.605],   // gizli toplanma alanı (kentin doğusu, ağaçlık)
+  [34.540, 36.560],   // Orontes geçidi
+  [34.518, 36.512],   // Re tümenine çarpma (nehir batı kıyısındaki yürüyüş hattı)
+  [34.545, 36.492],   // kuzeye dönüş
+  [34.568, 36.490]    // Amon kampı önü
+];
+L.polyline(hititTarruzHatti, { color:'#fff', weight:8, opacity:.5, interactive:false }).addTo(olayKatmani);
+L.polyline(hititTarruzHatti, { color:'#2d5774', weight:4, dashArray:'2 7', opacity:.98 })
+  .bindPopup('<h3>Hitit taarruzu — 2.500 savaş arabası</h3>Kadeş\'in doğusundaki ağaçlıklarda gizlenen savaş arabaları Orontes\'i geçti; nehir kıyısındaki yürüyüş hattındaki Re tümenini dağıttı ve kuzeye dönüp Amon kampına bindirdi.')
+  .addTo(olayKatmani);
+L.marker([34.571, 36.487], {
+  interactive:false, keyboard:false,
+  icon:L.divIcon({ className:'', html:'<div class="ok-ucu"></div>', iconSize:[18,18], iconAnchor:[9,7] })
+}).addTo(olayKatmani);
 
 /* --- Siyasi harita katmanı: MÖ ~1274 (şematik) --- */
 const siyasiKatmani = L.layerGroup();
@@ -495,9 +514,9 @@ L.control.layers(
   { collapsed:false }
 ).addTo(harita);
 
-etapKatmani.addTo(harita);
-olayKatmani.addTo(harita);
-siyasiKatmani.addTo(harita);
+siyasiKatmani.addTo(harita);   // siyasi dolgular en altta kalsın
+etapKatmani.addTo(harita);     // güzergâh onların üzerinde
+olayKatmani.addTo(harita);     // muharebe katmanı en üstte
 
 /* --- İlk görünüm ve görünüm düğmeleri --- */
 const seferSiniri = L.latLngBounds(ETAPLAR.map(e => [e.lat, e.lng])).pad(0.15);
@@ -506,13 +525,17 @@ const imparatorlukSiniri = L.latLngBounds(
 ).pad(0.05);
 harita.fitBounds(seferSiniri);
 
+const muharebeSiniri = L.latLngBounds([[34.46,36.42],[34.60,36.64]]).pad(0.15);
 const btnSefer = document.getElementById('btnSefer');
+const btnMuharebe = document.getElementById('btnMuharebe');
 const btnImparatorluk = document.getElementById('btnImparatorluk');
 function gorunumAyarla(hangi){
   btnSefer.classList.toggle('etkin', hangi === 'sefer');
+  btnMuharebe.classList.toggle('etkin', hangi === 'muharebe');
   btnImparatorluk.classList.toggle('etkin', hangi === 'imparatorluk');
 }
 btnSefer.onclick = () => { harita.flyToBounds(seferSiniri); gorunumAyarla('sefer'); };
+btnMuharebe.onclick = () => { harita.flyToBounds(muharebeSiniri); gorunumAyarla('muharebe'); };
 btnImparatorluk.onclick = () => { harita.flyToBounds(imparatorlukSiniri); gorunumAyarla('imparatorluk'); };
 
 /* =====================================================================
@@ -550,7 +573,7 @@ OLAYLAR.forEach((o, i) => {
   li.innerHTML = `<span class="olay-no">✦</span>
     <span><span class="etap-ad">${o.ad}</span></span>`;
   li.onclick = () => {
-    harita.flyTo([o.lat, o.lng], Math.max(harita.getZoom(), 9));
+    harita.flyTo([o.lat, o.lng], 11);
     olayKatmani.getLayers().find(k => k instanceof L.Marker && k.getLatLng().equals([o.lat, o.lng])).openPopup();
   };
   olayListesi.appendChild(li);
