@@ -19,7 +19,7 @@ Kurulum gerektirmez: `index.html` dosyasını çift tıklayıp tarayıcıda aç�
 
 - **9 sefer etabı**: Pi-Ramesses → Tjaru/Sile → Sina kuyuları → Gazze → Yafa → Sayda → Bekaa → Şabtuna → Kadeş; her etapda açıklama balonu
 - **Muharebe günü katmanı**: sahte istihbarat, Hitit taarruzu (2.500 savaş arabası), Ramses'in karşı taarruzu, Ne'arin birliklerinin varışı, Halep yanılgısı
-- **Bağlam katmanı**: Hattuşaş ve Kadeş Antlaşması'nın Boğazköy nüshası
+- **Siyasi harita katmanı**: Mısır ve Hitit etki alanları (şematik), Amurru çekişme bölgesi, başkentler (Pi-Ramesses, Hattuşaş)
 - **3 altyapı seçeneği**: uydu / arazi / sokak haritası
 - Kenar çubuğundan etaba tıklayınca haritaya uçuş ve balon açma
 
@@ -35,7 +35,7 @@ Tek dosyalık statik uygulama: Leaflet 1.9.4 (CDN), vanilla HTML/CSS/JS. Kurulum
 
 ## Bilimsel Not
 
-Koordinatlar **temsilîdir**; Gazze'nin kuzeyindeki güzergâh, kaynaklardaki etap adlarından hareketle yapılan akademik **rekonstrüksiyondur** (kıyı hattı + Bekaa Vadisi). "≈ yaklaşık konum" etiketli noktalar, konumu özellikle tartışmalı olanlardır. Güzergâh doğrulaması danışman hocayla birlikte yürütülmektedir.
+Koordinatlar **temsilîdir**; Gazze'nin kuzeyindeki güzergâh, kaynaklardaki etap adlarından hareketle yapılan akademik **rekonstrüksiyondur** (kıyı hattı + Bekaa Vadisi). "≈ yaklaşık konum" etiketli noktalar, konumu özellikle tartışmalı olanlardır. Siyasi alanlar (Mısır, Hatti, Amurru) kesin sınır değil, yaklaşık **etki alanlarıdır**. Güzergâh doğrulaması danışman hocayla birlikte yürütülmektedir.
 
 ## Yol Haritası
 

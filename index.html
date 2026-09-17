@@ -93,12 +93,25 @@
     display:flex; align-items:center; justify-content:center;
     box-shadow:0 1px 5px rgba(0,0,0,.6);
   }
-  .baglam-ignesi{
-    width:24px; height:24px; border-radius:50%; background:var(--hitit);
-    border:2px solid #fff; color:#fff; font-size:12px;
+  .baskent-ignesi{
+    width:30px; height:30px; border-radius:50%; background:var(--altin);
+    border:2px solid #fff; color:#fff; font-size:15px;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 1px 5px rgba(0,0,0,.6);
+    box-shadow:0 2px 6px rgba(0,0,0,.6);
   }
+  .bolge-etiketi{
+    background:transparent; border:none; box-shadow:none; padding:2px 4px;
+    font:700 13px/1.1 "Segoe UI",sans-serif; letter-spacing:3px;
+    color:#5a3d1e; text-transform:uppercase;
+    text-shadow:0 0 4px rgba(255,255,255,.95), 0 0 8px rgba(255,255,255,.8);
+  }
+  .bolge-etiketi::before{ display:none; }  /* Leaflet okunu gizle */
+  .etiket-hitit{ color:#274b63; }
+  .etiket-cekisme{ color:#4a4f58; font-size:11px; letter-spacing:2px; }
+  .lejyan i.kare{ width:14px; height:14px; border-radius:3px; border:1px solid rgba(255,255,255,.25); }
+  .kare-misir{ background:#d4a24e; }
+  .kare-hitit{ background:#3d6b8c; }
+  .kare-cekisme{ background:#8a8f98; }
   .yaklasik-rozet{
     display:inline-block; background:#3a2f22; color:var(--altin);
     border-radius:3px; padding:1px 6px; font-size:10.5px; margin-bottom:5px;
@@ -139,12 +152,17 @@
     <div><i class="dolu"></i> Numaralı noktalar: sefer etapları</div>
     <div><i class="cizgi-hitit"></i> Hitit savaş arabası taarruzu</div>
     <div><i class="yildiz">✦</i> Muharebe günü olayları</div>
+    <div><i class="kare kare-misir"></i> Mısır etki alanı (şematik)</div>
+    <div><i class="kare kare-hitit"></i> Hitit etki alanı (şematik)</div>
+    <div><i class="kare kare-cekisme"></i> Amurru — çekişme bölgesi</div>
+    <div><i class="yildiz">★</i> Başkentler: Pi-Ramesses, Hattuşaş</div>
   </div>
 
   <div class="dipnot">
     <b>v0.1 prototip.</b> Koordinatlar temsilîdir; Gazze'nin kuzeyindeki güzergâh,
     kaynaklardaki etap adlarından hareketle yapılan yaygın rekonstrüksiyondur (kıyı
-    hattı + Bekaa Vadisi). Akademik doğrulama danışman hocayla yapılacaktır.
+    hattı + Bekaa Vadisi). Siyasi alanlar (Mısır, Hatti, Amurru) kesin sınır
+    değil, yaklaşık etki alanlarıdır. Akademik doğrulama danışman hocayla yapılacaktır.
     Kaynaklar: Pentaur Şiiri, Rapor (Bulletin), kabartmalar (Ebu Simbel, Karnak,
     Luksor, Ramesseum, Abydos).
   </div>
@@ -302,25 +320,73 @@ L.polyline(
   { color:'#3d6b8c', weight:3.5, dashArray:'4 6', opacity:.95 }
 ).bindPopup('<h3>Hitit taarruzu</h3>2.500 savaş arabasının Orontes\'i geçip batıya, Amon kampına yöneldiği hat.').addTo(olayKatmani);
 
-/* --- Bağlam katmanı: Hattuşaş (varsayılan kapalı) --- */
-const baglamKatmani = L.layerGroup();
-const hIg = L.divIcon({
-  className:'', html:'<div class="baglam-ignesi">Ḫ</div>',
-  iconSize:[24,24], iconAnchor:[12,12]
+/* --- Siyasi harita katmanı: MÖ ~1274 (şematik) ---
+   Alanlar modern anlamda kesin sınırlar DEĞİL, yaklaşık etki alanlarıdır.
+   Koordinatlar [enlem, boylam]; el yapımı, şematik poligonlar. */
+const MISIR_ALANI = [
+  [31.20,29.70],[31.35,30.80],[31.50,31.10],[31.45,32.00],[31.30,32.35],
+  [31.15,33.30],[31.12,33.80],[31.50,34.45],[32.30,34.75],[33.00,35.05],
+  [33.35,35.20],[33.30,35.55],[32.70,35.55],[31.10,35.45],[29.55,34.95],
+  [27.80,34.30],[28.60,33.30],[29.95,32.55],[29.60,32.35],[28.00,32.80],
+  [26.50,33.70],[24.90,34.40],[24.05,34.40],[24.05,32.90],[24.10,32.10],
+  [26.00,29.80],[28.20,29.50],[29.90,29.10],[30.60,29.00],[31.10,29.40]
+];
+const HITIT_ALANI = [
+  [40.60,26.10],[40.30,31.30],[40.90,33.60],[41.30,35.20],[41.60,37.20],
+  [41.40,39.30],[40.80,40.30],[39.90,40.20],[39.00,39.80],[38.30,39.30],
+  [37.60,38.70],[36.90,38.00],[36.30,38.40],[35.50,38.90],[34.90,38.60],
+  [34.40,37.80],[34.20,37.20],[34.35,36.60],[34.65,35.95],[36.30,35.60],
+  [36.70,34.80],[36.90,33.80],[36.80,32.20],[36.60,30.60],[36.25,29.30],
+  [36.90,28.20],[37.70,27.60],[38.40,26.90],[39.30,26.70]
+];
+const CEKISME_ALANI = [
+  [33.30,35.20],[34.65,35.95],[34.55,36.30],[33.60,36.00],[33.30,35.60]
+];
+
+const siyasiKatmani = L.layerGroup();
+
+L.polygon(MISIR_ALANI, {
+  color:'#d4a24e', weight:2, dashArray:'6 4', fillColor:'#d4a24e', fillOpacity:.12
+}).bindPopup('<h3>Mısır İmparatorluğu (MÖ ~1274)</h3>19. Hanedan — II. Ramses dönemi. Yeni Krallık Mısırı, Kenan kıyı şeridi boyunca nüfuz alanını kuzeye taşımıştı; kuzeyde Hitit etkisiyle Amurru hattında karşılaşıyordu.').addTo(siyasiKatmani);
+
+L.polygon(HITIT_ALANI, {
+  color:'#3d6b8c', weight:2, dashArray:'6 4', fillColor:'#3d6b8c', fillOpacity:.12
+}).bindPopup('<h3>Hitit Devleti — Hatti (MÖ ~1274)</h3>II. Muvatalli dönemi. Anadolu merkezli imparatorluk; Karkemiş, Halep ve Ugarit gibi merkezler üzerinden Kuzey Suriye\'yi yönetiyor, güneybatıda Amurru hattında Mısır ile karşı karşıya geliyordu.').addTo(siyasiKatmani);
+
+L.polygon(CEKISME_ALANI, {
+  color:'#8a8f98', weight:1.5, fillColor:'#8a8f98', fillOpacity:.16
+}).bindPopup('<h3>Amurru — çekişme bölgesi</h3>Finike kıyıları ile Amurru, iki büyük gücün nüfuz mücadelesinin hattıydı. Amurru\'nun taraf değiştirmesi, Kadeş Savaşı\'nın fitilini ateşleyen gelişmelerden biriydi.').addTo(siyasiKatmani);
+
+/* Bölge adları (sabit etiketler) */
+L.tooltip({ permanent:true, direction:'center', className:'bolge-etiketi' })
+  .setLatLng([30.30,32.00]).setContent('MISIR').addTo(siyasiKatmani);
+L.tooltip({ permanent:true, direction:'center', className:'bolge-etiketi etiket-hitit' })
+  .setLatLng([38.80,34.50]).setContent('HATTİ').addTo(siyasiKatmani);
+L.tooltip({ permanent:true, direction:'center', className:'bolge-etiketi etiket-cekisme' })
+  .setLatLng([33.95,35.80]).setContent('AMURRU').addTo(siyasiKatmani);
+
+/* Başkentler */
+const baskentIgnesi = L.divIcon({
+  className:'', html:'<div class="baskent-ignesi">★</div>',
+  iconSize:[30,30], iconAnchor:[15,15]
 });
-L.marker([HATTUSAS.lat, HATTUSAS.lng], { icon:hIg })
-  .bindPopup(`<h3>${HATTUSAS.ad}</h3>${HATTUSAS.aciklama}`)
-  .addTo(baglamKatmani);
+L.marker([30.95,31.83], { icon:baskentIgnesi })
+  .bindPopup('<h3>★ Mısır başkenti — Pi-Ramesses</h3>II. Ramses\'in Doğu Delta\'da kurduğu yeni başkent (Kantir); seferin çıkış noktası.')
+  .addTo(siyasiKatmani);
+L.marker([HATTUSAS.lat, HATTUSAS.lng], { icon:baskentIgnesi })
+  .bindPopup(`<h3>★ Hitit başkenti — ${HATTUSAS.ad}</h3>${HATTUSAS.aciklama}`)
+  .addTo(siyasiKatmani);
 
 /* --- Katman denetimi --- */
 L.control.layers(
   { 'Uydu (Esri)':uydu, 'Arazi (OpenTopoMap)':arazi, 'Sokak (OSM)':osm },
-  { 'Muharebe günü olayları':olayKatmani, 'Bağlam: Hattuşaş':baglamKatmani },
+  { 'Muharebe günü olayları':olayKatmani, 'MÖ ~1274 siyasi harita (şematik)':siyasiKatmani },
   { collapsed:false }
 ).addTo(harita);
 
 etapKatmani.addTo(harita);
 olayKatmani.addTo(harita);
+siyasiKatmani.addTo(harita);
 
 /* --- İlk görünüm: sefer alanına oturt --- */
 harita.fitBounds(L.latLngBounds(ETAPLAR.map(e => [e.lat, e.lng])).pad(0.15));
