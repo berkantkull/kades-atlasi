@@ -169,7 +169,7 @@ const ETAPLAR = [
     aciklama:"Mısır'ın kuzeydoğu sınırındaki ana kale; 'Horus Yolları' denen, kuyularla donatılmış Sina askerî hattına buradan girildi."
   },
   {
-    ad:"Menphate Kuyuları — Sina hattı", lat:31.10, lng:33.10, yaklasik:true,
+    ad:"Menphate Kuyuları — Sina hattı", lat:31.01, lng:33.09, yaklasik:true,
     not:"Sınır kuyuları ve karakollar",
     aciklama:"Anlatıda adı geçen, orduya su sağlayan kuyu/karakol hattı. Sina'daki duraklar modern araştırmalarla (ör. Tell el-Borg kazıları) eşleştirilir; konum yaklaşık gösterimdir."
   },
@@ -251,9 +251,21 @@ uydu.addTo(harita);
 
 L.control.scale({ imperial:false }).addTo(harita);
 
-/* --- Mısır yürüyüş güzergâhı --- */
+/* --- Mısır yürüyüş güzergâhı ---
+   Ara noktalar (El-Ariş, Rafah, Aşkelon, Aşdod): çizginin kıyı ovasında
+   kalmasını sağlar — düz hat deniz üzerinden geçiyordu. Bunlar numaralı
+   etap değildir; "Horus Yolları"nun kara güzergâhına uygun biçimde. */
+const ARA_NOKTALAR = {
+  2: [[31.10, 33.78], [31.27, 34.24]],   // El-Ariş ovası, Rafah (3→4 arası)
+  3: [[31.66, 34.57], [31.79, 34.65]]    // Aşkelon, Aşdod (4→5 arası)
+};
+const guzergahNoktalari = [];
+ETAPLAR.forEach((e, i) => {
+  guzergahNoktalari.push([e.lat, e.lng]);
+  (ARA_NOKTALAR[i] || []).forEach(p => guzergahNoktalari.push(p));
+});
 const guzergah = L.polyline(
-  ETAPLAR.map(e => [e.lat, e.lng]),
+  guzergahNoktalari,
   { color:'#b4532a', weight:3.5, dashArray:'9 7', opacity:.95 }
 );
 
