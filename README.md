@@ -1,6 +1,6 @@
 # Kadeş Atlası
 
-**II. Ramses'in MÖ ~1274 Kadeş Seferi — Etkileşimli Dijital Harita (Prototip v0.1)**
+**II. Ramses'in MÖ ~1274 Kadeş Seferi — Etkileşimli Dijital Harita (Prototip v0.2)**
 
 Kadeş Atlası, tarihi dijital teknolojilerle buluşturan bir **dijital beşeriyat** (digital humanities) projesidir: Mısır kaynaklarının (Pentaur Şiiri, Rapor ve tapınak kabartmaları) izdiğiği Kadeş sefer güzergâhını etkileşimli bir harita üzerinde sunar.
 
@@ -15,11 +15,14 @@ Proje üç modül olarak tasarlanmıştır; bu depo **1. Modül — Etkileşimli
 Kurulum gerektirmez: `index.html` dosyasını çift tıklayıp tarayıcıda açın.
 (Yalnızca Leaflet kütüphanesi ve harita karoları CDN'den geldiği için internet bağlantısı gerekir.)
 
-## v0.1 Özellikleri
+## v0.2 Özellikleri
 
-- **9 sefer etabı**: Pi-Ramesses → Tjaru/Sile → Sina kuyuları → Gazze → Yafa → Sayda → Bekaa → Şabtuna → Kadeş; her etapda açıklama balonu
+- **9 sefer etabı**: Pi-Ramesses → Tjaru/Sile → Sina kuyuları → Gazze → Yafa → Sayda → Bekaa → Şabtuna → Kadeş; dikey zaman çizelgesi ve açıklama balonları
 - **Muharebe günü katmanı**: sahte istihbarat, Hitit taarruzu (2.500 savaş arabası), Ramses'in karşı taarruzu, Ne'arin birliklerinin varışı, Halep yanılgısı
-- **Siyasi harita katmanı**: Mısır ve Hitit etki alanları (şematik), Amurru çekişme bölgesi, başkentler (Pi-Ramesses, Hattuşaş)
+- **Siyasi harita katmanı**: Mısır ve Hatti etki alanları (şematik; Kaşka ve Assur hariç, Arzawa vassal kuşağı dahil), Amurru çekişme bölgesi
+- **Başkentler**: Pi-Ramesses ve Hattuşaş — panelde ayrı bölüm, haritada nabız animasyonlu yıldız iğneler
+- **İki görünüm düğmesi**: Sefer Görünümü / İmparatorluk Görünümü (tek tıkla iki devleti ve başkentleri kadraja alır)
+- **Arayüz**: koyu "müze panosu" teması, koyu harita kontrolleri, sefer çizgisinde ışıma efekti, vinyet
 - **3 altyapı seçeneği**: uydu / arazi / sokak haritası
 - Kenar çubuğundan etaba tıklayınca haritaya uçuş ve balon açma
 

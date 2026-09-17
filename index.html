@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kadeş Atlası · v0.1 — II. Ramses'in MÖ ~1274 Seferi</title>
+<title>Kadeş Atlası · v0.2 — II. Ramses'in MÖ ~1274 Seferi</title>
 
 <!-- Leaflet 1.9.4 (CDN) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -11,164 +11,264 @@
 
 <style>
   :root{
-    --mudur:#20242c;        /* kenar çubuğu zemini */
-    --murekkep:#e9e4d8;     /* metin */
+    --mudur:#14181f;        /* panel zemini */
+    --kart:#1d232e;         /* kart zemini */
+    --cizgi:#2c3442;        /* kenarlıklar */
+    --murekkep:#efe9dc;     /* ana metin */
+    --soluk:#9aa3b2;        /* ikincil metin */
     --akin:#b4532a;         /* toprak kızılı — Mısır yürüyüşü */
-    --hitit:#3d6b8c;        /* çelik mavisi — Hitit taarruzu */
+    --hitit:#3d6b8c;        /* çelik mavisi — Hatti */
     --kan:#8f1d1d;          /* muharebe olayları */
-    --altin:#d4a24e;        /* vurgu */
+    --altin:#d4a24e;        /* vurgu / başkentler */
+    --serif:"Palatino Linotype","Book Antiqua",Georgia,serif;
   }
   *{ box-sizing:border-box; }
   html,body{ height:100%; margin:0; }
   body{
-    display:flex; font-family:"Segoe UI", system-ui, sans-serif;
+    display:flex; font-family:"Segoe UI",system-ui,sans-serif;
     color:var(--murekkep); background:var(--mudur);
   }
 
-  /* ---------- Kenar çubuğu ---------- */
+  /* ================= KENAR PANELİ ================= */
   #kenar{
-    width:350px; min-width:350px; height:100vh; overflow-y:auto;
-    padding:22px 20px 30px; border-right:1px solid #343a46;
+    width:360px; min-width:360px; height:100vh; overflow-y:auto;
+    padding:0 0 30px; border-right:1px solid var(--cizgi);
+    background:linear-gradient(180deg,#171c25 0%,var(--mudur) 240px);
   }
-  #kenar h1{
-    font-family:"Palatino Linotype","Book Antiqua",Georgia,serif;
-    font-size:26px; letter-spacing:2px; margin:0; color:#fff;
+  #kenar::-webkit-scrollbar{ width:8px; }
+  #kenar::-webkit-scrollbar-thumb{ background:var(--cizgi); border-radius:4px; }
+
+  .baslik{ padding:24px 22px 18px; border-bottom:1px solid var(--cizgi); }
+  .marka{
+    font-family:var(--serif); font-size:27px; letter-spacing:3px;
+    color:#fff; margin:0;
   }
-  #kenar h1 span{ color:var(--altin); }
+  .marka span{ color:var(--altin); }
   .altyazi{
-    font-family:"Palatino Linotype",Georgia,serif; font-style:italic;
-    color:var(--altin); margin:6px 0 14px; font-size:14px;
+    font-family:var(--serif); font-style:italic; color:var(--altin);
+    margin:6px 0 12px; font-size:14px;
   }
-  .giris{ font-size:13.5px; line-height:1.55; color:#cfc9bb; margin:0 0 14px; }
+  .giris{ font-size:13.5px; line-height:1.6; color:#cfc9bb; margin:0 0 14px; }
   .cip{
     display:inline-block; border:1px solid var(--altin); color:var(--altin);
-    border-radius:4px; padding:3px 8px; font-size:12px; margin:0 0 16px;
+    border-radius:999px; padding:3px 10px; font-size:12px;
   }
+
+  /* Görünüm düğmeleri */
+  .icerik{ padding:0 22px; }
+  .bakis{ display:flex; gap:8px; margin:18px 0 4px; }
+  .bakis button{
+    flex:1; padding:8px 6px; border-radius:9px; cursor:pointer;
+    background:var(--kart); color:var(--murekkep);
+    border:1px solid var(--cizgi); font-size:12.5px; font-weight:600;
+    transition:border-color .15s, color .15s;
+  }
+  .bakis button:hover{ border-color:var(--altin); }
+  .bakis button.etkin{ border-color:var(--altin); color:var(--altin); }
+
   h2{
-    font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
-    color:#9aa3b2; margin:20px 0 8px; border-bottom:1px solid #343a46; padding-bottom:6px;
+    font-size:11.5px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--soluk); margin:22px 0 10px; display:flex; align-items:center; gap:8px;
   }
-  ul.etaplar{ list-style:none; margin:0; padding:0; }
+  h2::after{ content:''; flex:1; height:1px; background:var(--cizgi); }
+
+  /* Listeler */
+  ul.etaplar, ul.zaman-cizgisi{ list-style:none; margin:0; padding:0; }
   ul.etaplar li{
-    display:flex; gap:10px; align-items:flex-start; padding:7px 6px;
-    border-radius:6px; cursor:pointer; font-size:13.5px;
+    display:flex; gap:10px; align-items:flex-start; padding:8px 8px;
+    border-radius:8px; cursor:pointer; font-size:13.5px;
+    transition:background .12s;
   }
-  ul.etaplar li:hover{ background:#2a2f3a; }
-  .num{
-    flex:0 0 24px; height:24px; border-radius:50%; background:var(--akin);
+  ul.etaplar li:hover{ background:var(--kart); }
+
+  /* Dikey zaman çizelgesi (sefer etapları) */
+  .zaman-cizgisi li{
+    position:relative; padding:0 0 14px 36px; cursor:pointer;
+  }
+  .zaman-cizgisi li::before{              /* bağlantı çizgisi */
+    content:''; position:absolute; left:12px; top:28px; bottom:-2px;
+    width:2px; background:var(--cizgi);
+  }
+  .zaman-cizgisi li:last-child::before{ display:none; }
+  .zaman-cizgisi li:hover .etap-ad{ color:var(--altin); }
+  .zaman-cizgisi .num{
+    position:absolute; left:0; top:0;
+    width:26px; height:26px; border-radius:50%; background:var(--akin);
     color:#fff; font-size:12px; font-weight:700; display:flex;
-    align-items:center; justify-content:center; border:2px solid #fff3;
+    align-items:center; justify-content:center; border:2px solid #ffffff2e;
+    box-shadow:0 1px 4px rgba(0,0,0,.5);
   }
+  .zaman-cizgisi li:hover .num{ border-color:var(--altin); }
+  .etap-ad{ font-weight:600; transition:color .12s; }
+  .etap-not{ display:block; font-size:11.5px; color:var(--soluk); margin-top:1px; }
+
   .olay-no{
     flex:0 0 24px; height:24px; border-radius:50%; background:#fff;
     color:var(--kan); border:2px solid var(--kan); font-size:13px;
     display:flex; align-items:center; justify-content:center;
   }
-  .etap-ad{ font-weight:600; }
-  .etap-not{ display:block; font-size:11.5px; color:#9aa3b2; margin-top:1px; }
-  .lejyan{ font-size:12.5px; line-height:1.8; color:#cfc9bb; }
+
+  /* Lejant */
+  .lejyan{ font-size:12.5px; line-height:2; color:#cfc9bb; }
   .lejyan i{ display:inline-block; width:22px; margin-right:6px; vertical-align:middle; }
   .cizgi-akin{ border-top:3px dashed var(--akin); }
   .cizgi-hitit{ border-top:3px dashed var(--hitit); }
   .dolu{ width:12px; height:12px; border-radius:50%; background:var(--akin); }
   .yildiz{ color:var(--kan); font-style:normal; font-size:15px; }
-  .dipnot{
-    margin-top:18px; font-size:11.5px; line-height:1.55; color:#8b93a3;
-    border-top:1px solid #343a46; padding-top:12px;
-  }
-
-  /* ---------- Harita ---------- */
-  #harita{ flex:1; height:100vh; }
-
-  /* Harata iğneleri */
-  .etap-ignesi{
-    width:26px; height:26px; border-radius:50%; background:var(--akin);
-    border:2px solid #fff; color:#fff; font:700 12px/1 "Segoe UI",sans-serif;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 1px 5px rgba(0,0,0,.6);
-  }
-  .olay-ignesi{
-    width:24px; height:24px; border-radius:50%; background:#fff;
-    border:2px solid var(--kan); color:var(--kan); font-size:13px;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 1px 5px rgba(0,0,0,.6);
-  }
-  .baskent-ignesi{
-    width:30px; height:30px; border-radius:50%; background:var(--altin);
-    border:2px solid #fff; color:#fff; font-size:15px;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 2px 6px rgba(0,0,0,.6);
-  }
-  .bolge-etiketi{
-    background:transparent; border:none; box-shadow:none; padding:2px 4px;
-    font:700 13px/1.1 "Segoe UI",sans-serif; letter-spacing:3px;
-    color:#5a3d1e; text-transform:uppercase;
-    text-shadow:0 0 4px rgba(255,255,255,.95), 0 0 8px rgba(255,255,255,.8);
-  }
-  .bolge-etiketi::before{ display:none; }  /* Leaflet okunu gizle */
-  .etiket-hitit{ color:#274b63; }
-  .etiket-cekisme{ color:#4a4f58; font-size:11px; letter-spacing:2px; }
+  .yildiz-altin{ color:var(--altin); font-style:normal; font-size:15px; }
   .lejyan i.kare{ width:14px; height:14px; border-radius:3px; border:1px solid rgba(255,255,255,.25); }
   .kare-misir{ background:#d4a24e; }
   .kare-hitit{ background:#3d6b8c; }
   .kare-cekisme{ background:#8a8f98; }
+
+  .dipnot{
+    margin:22px 22px 0; font-size:11.5px; line-height:1.6; color:#8b93a3;
+    border-top:1px solid var(--cizgi); padding-top:12px;
+  }
+
+  /* ================= HARİTA ================= */
+  #harita-wrap{ flex:1; height:100vh; position:relative; }
+  #harita{ position:absolute; inset:0; }
+  #vinyet{
+    position:absolute; inset:0; pointer-events:none; z-index:450;
+    box-shadow:inset 0 0 140px rgba(10,12,16,.45);
+  }
+
+  /* Harita iğneleri */
+  .etap-ignesi{
+    width:27px; height:27px; border-radius:50%; background:var(--akin);
+    border:2px solid #fff; color:#fff; font:700 12px/1 "Segoe UI",sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 5px rgba(0,0,0,.6); transition:transform .12s;
+  }
+  .etap-ignesi:hover{ transform:scale(1.15); }
+  .olay-ignesi{
+    width:24px; height:24px; border-radius:50%; background:#fff;
+    border:2px solid var(--kan); color:var(--kan); font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 5px rgba(0,0,0,.6); transition:transform .12s;
+  }
+  .olay-ignesi:hover{ transform:scale(1.15); }
+  .baskent-ignesi{
+    width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #f0c37a, #d4a24e 70%);
+    border:2px solid #fff; color:#4a2f0e; font-size:17px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.6);
+    animation:nabiz 2.4s infinite;
+  }
+  @keyframes nabiz{
+    0%   { box-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 0 0 rgba(212,162,78,.55); }
+    70%  { box-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 0 18px rgba(212,162,78,0); }
+    100% { box-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 0 0 rgba(212,162,78,0); }
+  }
+
+  /* Bölge adları */
+  .leaflet-tooltip.bolge-etiketi{
+    background:transparent; border:none; box-shadow:none; padding:2px 4px;
+    font:700 13px/1.1 "Segoe UI",sans-serif; letter-spacing:3px;
+    color:#5a3d1e; text-transform:uppercase; white-space:nowrap;
+    text-shadow:0 0 4px rgba(255,255,255,.95), 0 0 10px rgba(255,255,255,.85), 0 1px 2px rgba(255,255,255,.8);
+  }
+  .leaflet-tooltip.bolge-etiketi::before{ display:none; }
+  .etiket-hitit{ color:#22435c; }
+  .etiket-cekisme{ color:#4a4f58; font-size:11px; letter-spacing:2px; }
+
   .yaklasik-rozet{
     display:inline-block; background:#3a2f22; color:var(--altin);
     border-radius:3px; padding:1px 6px; font-size:10.5px; margin-bottom:5px;
   }
-  .leaflet-popup-content{ font-size:13px; line-height:1.45; }
-  .leaflet-popup-content h3{ margin:0 0 6px; font-size:14.5px; }
+
+  /* Harita kontrolleri — koyu tema */
+  .leaflet-bar a, .leaflet-control-layers{
+    background:var(--kart); color:var(--murekkep);
+    border-color:var(--cizgi);
+  }
+  .leaflet-bar a:hover{ background:#262d3a; color:var(--altin); }
+  .leaflet-control-layers{
+    border-radius:10px; padding:8px 10px; font-size:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+  .leaflet-control-layers-expanded{ padding:8px 12px; }
+  .leaflet-control-layers label{ margin:3px 0; cursor:pointer; }
+  .leaflet-control-attribution{
+    background:rgba(20,24,31,.75); color:#8b93a3; font-size:10px;
+  }
+  .leaflet-control-attribution a{ color:#aab3c2; }
+
+  /* Baloncuklar */
+  .leaflet-popup-content-wrapper{
+    border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.45);
+  }
+  .leaflet-popup-content{ font-size:13px; line-height:1.5; margin:12px 14px; }
+  .leaflet-popup-content h3{
+    margin:0 0 6px; font-family:var(--serif); font-size:15px; color:#8a4a1f;
+    border-bottom:1px solid #e8ddcb; padding-bottom:5px;
+  }
 
   @media (max-width:820px){
     body{ flex-direction:column; }
-    #kenar{ width:100%; min-width:0; height:auto; max-height:45vh; }
-    #harita{ height:55vh; }
+    #kenar{ width:100%; min-width:0; height:auto; max-height:46vh; }
+    #harita-wrap{ height:54vh; }
   }
 </style>
 </head>
 <body>
 
-<div id="kenar">
-  <h1>KADEŞ <span>ATLASI</span></h1>
-  <div class="altyazi">II. Ramses'in MÖ ~1274 Kadeş Seferi</div>
+<aside id="kenar">
+  <header class="baslik">
+    <div class="marka">KADEŞ <span>ATLASI</span></div>
+    <div class="altyazi">II. Ramses'in MÖ ~1274 Kadeş Seferi</div>
+    <p class="giris">
+      Mısır kaynakları (Pentaur Şiiri, Rapor ve tapınak kabartmaları) temel alınarak
+      hazırlanmış etkileşimli güzergâh gösterimi. Hükümdarlığın 5. yılında, dört tümene
+      bölünen Mısır ordusu Pi-Ramesses'ten yola çıkıp yaklaşık bir ay sonra Asi (Orontes)
+      kıyısındaki Kadeş'e ulaştı.
+    </p>
+    <span class="cip">5. yıl · Shemu 1/9 → 3/9 (≈ 1 aylık yürüyüş)</span>
+  </header>
 
-  <p class="giris">
-    Mısır kaynakları (Pentaur Şiiri, Rapor ve tapınak kabartmaları) temel alınarak
-    hazırlanmış etkileşimli güzergâh gösterimi. Hükümdarlığın 5. yılında, dört tümene
-    bölünen Mısır ordusu Pi-Ramesses'ten yola çıkıp yaklaşık bir ay sonra Asi (Orontes)
-    kıyısındaki Kadeş'e ulaştı.
-  </p>
-  <span class="cip">5. yıl · Shemu 1/9 → 3/9 (≈ 1 aylık yürüyüş)</span>
+  <div class="icerik">
+    <div class="bakis">
+      <button id="btnSefer" class="etkin" title="Yürüyüş güzergâhını kadraja al">♞ Sefer Görünümü</button>
+      <button id="btnImparatorluk" title="İki devletin etki alanlarını ve başkentleri kadraja al">🏛 İmparatorluk Görünümü</button>
+    </div>
 
-  <h2>Sefer Etapları</h2>
-  <ul class="etaplar" id="etapListesi"></ul>
+    <h2>Başkentler</h2>
+    <ul class="etaplar" id="baskentListesi"></ul>
 
-  <h2>Muharebe Günü</h2>
-  <ul class="etaplar" id="olayListesi"></ul>
+    <h2>Sefer Etapları</h2>
+    <ul class="zaman-cizgisi" id="etapListesi"></ul>
 
-  <h2>Lejant</h2>
-  <div class="lejyan">
-    <div><i class="cizgi-akin"></i> Mısır yürüyüş güzergâhı (rekonstrüksiyon)</div>
-    <div><i class="dolu"></i> Numaralı noktalar: sefer etapları</div>
-    <div><i class="cizgi-hitit"></i> Hitit savaş arabası taarruzu</div>
-    <div><i class="yildiz">✦</i> Muharebe günü olayları</div>
-    <div><i class="kare kare-misir"></i> Mısır etki alanı (şematik)</div>
-    <div><i class="kare kare-hitit"></i> Hitit etki alanı (şematik)</div>
-    <div><i class="kare kare-cekisme"></i> Amurru — çekişme bölgesi</div>
-    <div><i class="yildiz">★</i> Başkentler: Pi-Ramesses, Hattuşaş</div>
+    <h2>Muharebe Günü</h2>
+    <ul class="etaplar" id="olayListesi"></ul>
+
+    <h2>Lejant</h2>
+    <div class="lejyan">
+      <div><i class="cizgi-akin"></i> Mısır yürüyüş güzergâhı (rekonstrüksiyon)</div>
+      <div><i class="dolu"></i> Numaralı noktalar: sefer etapları</div>
+      <div><i class="cizgi-hitit"></i> Hitit savaş arabası taarruzu</div>
+      <div><i class="yildiz">✦</i> Muharebe günü olayları</div>
+      <div><i class="kare kare-misir"></i> Mısır etki alanı (şematik)</div>
+      <div><i class="kare kare-hitit"></i> Hatti etki alanı (şematik)</div>
+      <div><i class="kare kare-cekisme"></i> Amurru — çekişme bölgesi</div>
+      <div><i class="yildiz-altin">★</i> Başkentler</div>
+    </div>
   </div>
 
   <div class="dipnot">
-    <b>v0.1 prototip.</b> Koordinatlar temsilîdir; Gazze'nin kuzeyindeki güzergâh,
+    <b>v0.2 prototip.</b> Koordinatlar temsilîdir; Gazze'nin kuzeyindeki güzergâh,
     kaynaklardaki etap adlarından hareketle yapılan yaygın rekonstrüksiyondur (kıyı
-    hattı + Bekaa Vadisi). Siyasi alanlar (Mısır, Hatti, Amurru) kesin sınır
-    değil, yaklaşık etki alanlarıdır. Akademik doğrulama danışman hocayla yapılacaktır.
+    hattı + Bekaa Vadisi). Siyasi alanlar (Mısır, Hatti, Amurru) kesin sınır değil,
+    yaklaşık etki alanlarıdır. Akademik doğrulama danışman hocayla yapılacaktır.
     Kaynaklar: Pentaur Şiiri, Rapor (Bulletin), kabartmalar (Ebu Simbel, Karnak,
     Luksor, Ramesseum, Abydos).
   </div>
-</div>
+</aside>
 
-<div id="harita"></div>
+<main id="harita-wrap">
+  <div id="harita"></div>
+  <div id="vinyet"></div>
+</main>
 
 <script>
 /* =====================================================================
@@ -203,8 +303,8 @@ const ETAPLAR = [
   },
   {
     ad:"Sayda (Sidon) bölgesi", lat:33.557, lng:35.372, yaklasik:true,
-    not:"Finike kıyıları",
-    aciklama:"Finike kıyı şehirleri boyunca ilerleyiş; Mısır'ın bu bölgedeki geleneksel nüfuz alanı."
+    not:"Amurru — çekişme bölgesi",
+    aciklama:"Finike kıyı şehirleri boyunca ilerleyiş. Bu şerit, Mısır ile Hatti arasındaki nüfuz mücadelesinin hattıydı; ordu siyasi olarak en hassas bölgeden geçiyordu."
   },
   {
     ad:"Bekaa Geçişi", lat:34.008, lng:36.204, yaklasik:true,
@@ -218,8 +318,8 @@ const ETAPLAR = [
   },
   {
     ad:"Kadeş (Tell Nebi Mend)", lat:34.561, lng:36.529,
-    not:"Muharebe alanı",
-    aciklama:"Asi kıyısında stratejik tepe kenti. II. Muvatalli komutasındaki Hitit ordusu kentin arkasında, ağaçların arasında gizlenmişti. MÖ ~1274'te burada tarihin en ayrıntılı belgelenmiş savaşlarından biri yaşandı."
+    not:"Muharebe alanı — Hatti sınırı",
+    aciklama:"Asi kıyısında stratejik tepe kenti; Hatti sınırının anahtar noktası. II. Muvatalli komutasındaki Hitit ordusu kentin arkasında, ağaçların arasında gizlenmişti."
   }
 ];
 
@@ -246,10 +346,42 @@ const OLAYLAR = [
   }
 ];
 
-const HATTUSAS = {
-  ad:"Hattuşaş (Boğazköy)", lat:40.019, lng:34.615,
-  aciklama:"Hitit başkenti. Kadeş Antlaşması'nın (MÖ ~1259) Boğazköy nüshası 1906'da burada bulundu; bugün İstanbul Arkeoloji Müzeleri'nde. Antlaşmanın bir kopyası BM merkezinde sergilenir."
-};
+const BASKENTLER = [
+  {
+    ad:"Pi-Ramesses (Kantir)", lat:31.02, lng:31.91, rol:"Mısır başkenti", zum:8,
+    aciklama:"II. Ramses'in Doğu Delta'da kurduğu yeni başkent; seferin çıkış noktası."
+  },
+  {
+    ad:"Hattuşaş (Boğazköy)", lat:40.019, lng:34.615, rol:"Hitit (Hatti) başkenti", zum:6,
+    aciklama:"Hitit Devleti'nin başkenti. Kadeş Antlaşması'nın (MÖ ~1259) Boğazköy nüshası 1906'da burada bulundu; bugün İstanbul Arkeoloji Müzeleri'nde. Antlaşmanın bir kopyası BM merkezinde sergilenir."
+  }
+];
+
+/* =====================================================================
+   SİYASİ ALANLAR — MÖ ~1274 (şematik etki alanları)
+   Modern anlamda kesin sınır değildir. Koordinatlar [enlem, boylam].
+   ===================================================================== */
+const MISIR_ALANI = [
+  [31.20,29.70],[31.35,30.80],[31.50,31.10],[31.45,32.00],[31.30,32.35],
+  [31.15,33.30],[31.12,33.80],[31.50,34.45],[32.30,34.75],[33.00,35.05],
+  [33.35,35.20],[33.30,35.55],[32.70,35.55],[31.10,35.45],[29.55,34.95],
+  [27.75,34.25],[28.60,33.30],[29.95,32.55],[29.55,32.30],[28.70,32.55],
+  [28.00,32.80],[26.50,33.70],[24.90,34.40],[24.05,34.40],[24.05,32.90],
+  [24.10,32.10],[26.00,29.80],[28.20,29.50],[29.90,29.10],[30.60,29.00],
+  [31.10,29.40]
+];
+/* Kuzeyde Kaşka boyları, doğuda Assur bu alanın dışındadır. */
+const HITIT_ALANI = [
+  [40.35,29.20],[40.75,31.20],[40.95,33.00],[41.00,34.90],[40.75,36.30],
+  [40.00,38.30],[39.20,39.10],[38.40,38.85],[37.60,38.50],[36.90,38.05],
+  [36.40,38.00],[35.85,37.55],[35.25,37.05],[34.60,36.80],[34.35,36.55],
+  [34.65,35.95],[35.55,35.80],[36.35,36.15],[36.80,35.10],[36.85,33.90],
+  [37.35,33.20],[37.70,32.10],[38.10,31.00],[38.30,29.90],[38.55,28.70],
+  [37.90,28.10],[37.15,28.70],[36.95,29.60],[36.65,30.70],[37.20,31.90]
+];
+const CEKISME_ALANI = [
+  [33.30,35.20],[34.65,35.95],[34.50,36.35],[33.60,36.00],[33.30,35.60]
+];
 
 /* =====================================================================
    HARİTA
@@ -282,17 +414,18 @@ ETAPLAR.forEach((e, i) => {
   guzergahNoktalari.push([e.lat, e.lng]);
   (ARA_NOKTALAR[i] || []).forEach(p => guzergahNoktalari.push(p));
 });
-const guzergah = L.polyline(
-  guzergahNoktalari,
-  { color:'#b4532a', weight:3.5, dashArray:'9 7', opacity:.95 }
-);
+/* Işıma altlığı + ana çizgi */
+const guzergahIsima = L.polyline(guzergahNoktalari, { color:'#b4532a', weight:10, opacity:.16 });
+const guzergah = L.polyline(guzergahNoktalari, { color:'#b4532a', weight:3.5, dashArray:'9 7', opacity:.95 });
 
 /* --- Sefer etapları --- */
 const etapKatmani = L.layerGroup();
+guzergahIsima.addTo(etapKatmani);
+guzergah.addTo(etapKatmani);
 ETAPLAR.forEach((e, i) => {
   const ig = L.divIcon({
     className:'', html:`<div class="etap-ignesi">${i+1}</div>`,
-    iconSize:[26,26], iconAnchor:[13,13]
+    iconSize:[27,27], iconAnchor:[13,13]
   });
   L.marker([e.lat, e.lng], { icon:ig })
     .bindPopup(`
@@ -301,7 +434,6 @@ ETAPLAR.forEach((e, i) => {
     `)
     .addTo(etapKatmani);
 });
-guzergah.addTo(etapKatmani);
 
 /* --- Muharebe günü katmanı --- */
 const olayKatmani = L.layerGroup();
@@ -320,38 +452,16 @@ L.polyline(
   { color:'#3d6b8c', weight:3.5, dashArray:'4 6', opacity:.95 }
 ).bindPopup('<h3>Hitit taarruzu</h3>2.500 savaş arabasının Orontes\'i geçip batıya, Amon kampına yöneldiği hat.').addTo(olayKatmani);
 
-/* --- Siyasi harita katmanı: MÖ ~1274 (şematik) ---
-   Alanlar modern anlamda kesin sınırlar DEĞİL, yaklaşık etki alanlarıdır.
-   Koordinatlar [enlem, boylam]; el yapımı, şematik poligonlar. */
-const MISIR_ALANI = [
-  [31.20,29.70],[31.35,30.80],[31.50,31.10],[31.45,32.00],[31.30,32.35],
-  [31.15,33.30],[31.12,33.80],[31.50,34.45],[32.30,34.75],[33.00,35.05],
-  [33.35,35.20],[33.30,35.55],[32.70,35.55],[31.10,35.45],[29.55,34.95],
-  [27.80,34.30],[28.60,33.30],[29.95,32.55],[29.60,32.35],[28.00,32.80],
-  [26.50,33.70],[24.90,34.40],[24.05,34.40],[24.05,32.90],[24.10,32.10],
-  [26.00,29.80],[28.20,29.50],[29.90,29.10],[30.60,29.00],[31.10,29.40]
-];
-const HITIT_ALANI = [
-  [40.60,26.10],[40.30,31.30],[40.90,33.60],[41.30,35.20],[41.60,37.20],
-  [41.40,39.30],[40.80,40.30],[39.90,40.20],[39.00,39.80],[38.30,39.30],
-  [37.60,38.70],[36.90,38.00],[36.30,38.40],[35.50,38.90],[34.90,38.60],
-  [34.40,37.80],[34.20,37.20],[34.35,36.60],[34.65,35.95],[36.30,35.60],
-  [36.70,34.80],[36.90,33.80],[36.80,32.20],[36.60,30.60],[36.25,29.30],
-  [36.90,28.20],[37.70,27.60],[38.40,26.90],[39.30,26.70]
-];
-const CEKISME_ALANI = [
-  [33.30,35.20],[34.65,35.95],[34.55,36.30],[33.60,36.00],[33.30,35.60]
-];
-
+/* --- Siyasi harita katmanı: MÖ ~1274 (şematik) --- */
 const siyasiKatmani = L.layerGroup();
 
 L.polygon(MISIR_ALANI, {
-  color:'#d4a24e', weight:2, dashArray:'6 4', fillColor:'#d4a24e', fillOpacity:.12
-}).bindPopup('<h3>Mısır İmparatorluğu (MÖ ~1274)</h3>19. Hanedan — II. Ramses dönemi. Yeni Krallık Mısırı, Kenan kıyı şeridi boyunca nüfuz alanını kuzeye taşımıştı; kuzeyde Hitit etkisiyle Amurru hattında karşılaşıyordu.').addTo(siyasiKatmani);
+  color:'#d4a24e', weight:1.5, fillColor:'#d4a24e', fillOpacity:.10
+}).bindPopup('<h3>Mısır İmparatorluğu (MÖ ~1274)</h3>19. Hanedan — II. Ramses dönemi. Mısır, Kenan kıyı şeridi boyunca nüfuz alanını kuzeye taşımıştı; kuzeyde Amurru hattında Hitit etkisiyle karşılaşıyordu. Nübye, Mısır yönetiminde ayrı bir valilik olarak bu gösterimin dışında tutulmuştur.').addTo(siyasiKatmani);
 
 L.polygon(HITIT_ALANI, {
-  color:'#3d6b8c', weight:2, dashArray:'6 4', fillColor:'#3d6b8c', fillOpacity:.12
-}).bindPopup('<h3>Hitit Devleti — Hatti (MÖ ~1274)</h3>II. Muvatalli dönemi. Anadolu merkezli imparatorluk; Karkemiş, Halep ve Ugarit gibi merkezler üzerinden Kuzey Suriye\'yi yönetiyor, güneybatıda Amurru hattında Mısır ile karşı karşıya geliyordu.').addTo(siyasiKatmani);
+  color:'#3d6b8c', weight:1.5, fillColor:'#3d6b8c', fillOpacity:.10
+}).bindPopup('<h3>Hitit Devleti — Hatti (MÖ ~1274)</h3>II. Muvatalli dönemi. Anadolu merkezli imparatorluk; Karkemiş, Halep ve Ugarit gibi tâbi merkezler üzerinden Kuzey Suriye\'yi yönetiyordu. Kuzeydeki Kaşka boyları ile doğudaki Assur bu alanın dışındadır; batıdaki Arzawa ülkeleri vassal kuşağı olarak gösterilmiştir.').addTo(siyasiKatmani);
 
 L.polygon(CEKISME_ALANI, {
   color:'#8a8f98', weight:1.5, fillColor:'#8a8f98', fillOpacity:.16
@@ -365,17 +475,18 @@ L.tooltip({ permanent:true, direction:'center', className:'bolge-etiketi etiket-
 L.tooltip({ permanent:true, direction:'center', className:'bolge-etiketi etiket-cekisme' })
   .setLatLng([33.95,35.80]).setContent('AMURRU').addTo(siyasiKatmani);
 
-/* Başkentler */
+/* Başkentler (nabız animasyonlu yıldız iğneler) */
 const baskentIgnesi = L.divIcon({
   className:'', html:'<div class="baskent-ignesi">★</div>',
-  iconSize:[30,30], iconAnchor:[15,15]
+  iconSize:[34,34], iconAnchor:[17,17]
 });
-L.marker([30.95,31.83], { icon:baskentIgnesi })
-  .bindPopup('<h3>★ Mısır başkenti — Pi-Ramesses</h3>II. Ramses\'in Doğu Delta\'da kurduğu yeni başkent (Kantir); seferin çıkış noktası.')
-  .addTo(siyasiKatmani);
-L.marker([HATTUSAS.lat, HATTUSAS.lng], { icon:baskentIgnesi })
-  .bindPopup(`<h3>★ Hitit başkenti — ${HATTUSAS.ad}</h3>${HATTUSAS.aciklama}`)
-  .addTo(siyasiKatmani);
+const baskentIsaretleri = [];
+BASKENTLER.forEach(b => {
+  const m = L.marker([b.lat, b.lng], { icon:baskentIgnesi })
+    .bindPopup(`<h3>★ ${b.rol} — ${b.ad}</h3>${b.aciklama}`)
+    .addTo(siyasiKatmani);
+  baskentIsaretleri.push(m);
+});
 
 /* --- Katman denetimi --- */
 L.control.layers(
@@ -388,22 +499,47 @@ etapKatmani.addTo(harita);
 olayKatmani.addTo(harita);
 siyasiKatmani.addTo(harita);
 
-/* --- İlk görünüm: sefer alanına oturt --- */
-harita.fitBounds(L.latLngBounds(ETAPLAR.map(e => [e.lat, e.lng])).pad(0.15));
+/* --- İlk görünüm ve görünüm düğmeleri --- */
+const seferSiniri = L.latLngBounds(ETAPLAR.map(e => [e.lat, e.lng])).pad(0.15);
+const imparatorlukSiniri = L.latLngBounds(
+  MISIR_ALANI.concat(HITIT_ALANI, BASKENTLER.map(b => [b.lat, b.lng]))
+).pad(0.05);
+harita.fitBounds(seferSiniri);
+
+const btnSefer = document.getElementById('btnSefer');
+const btnImparatorluk = document.getElementById('btnImparatorluk');
+function gorunumAyarla(hangi){
+  btnSefer.classList.toggle('etkin', hangi === 'sefer');
+  btnImparatorluk.classList.toggle('etkin', hangi === 'imparatorluk');
+}
+btnSefer.onclick = () => { harita.flyToBounds(seferSiniri); gorunumAyarla('sefer'); };
+btnImparatorluk.onclick = () => { harita.flyToBounds(imparatorlukSiniri); gorunumAyarla('imparatorluk'); };
 
 /* =====================================================================
-   KENAR ÇUBUĞU LİSTELERİ — tıklayınca uç ve balonu aç
+   KENAR PANELİ LİSTELERİ — tıklayınca uç ve balonu aç
    ===================================================================== */
+const baskentListesi = document.getElementById('baskentListesi');
+BASKENTLER.forEach((b, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="yildiz-altin" style="font-size:18px">★</span>
+    <span><span class="etap-ad">${b.ad}</span>
+    <span class="etap-not">${b.rol}</span></span>`;
+  li.onclick = () => {
+    harita.flyTo([b.lat, b.lng], b.zum);
+    baskentIsaretleri[i].openPopup();
+  };
+  baskentListesi.appendChild(li);
+});
+
 const etapListesi = document.getElementById('etapListesi');
 ETAPLAR.forEach((e, i) => {
   const li = document.createElement('li');
   li.innerHTML = `<span class="num">${i+1}</span>
     <span><span class="etap-ad">${e.ad}</span>
-    ${e.yaklasik ? '<span class="etap-not">≈ ' : '<span class="etap-not">'}
-    ${e.not}</span></span>`;
+    <span class="etap-not">${e.yaklasik ? '≈ ' : ''}${e.not}</span></span>`;
   li.onclick = () => {
     harita.flyTo([e.lat, e.lng], Math.max(harita.getZoom(), 9));
-    etapKatmani.getLayers()[i].openPopup();
+    etapKatmani.getLayers().find(k => k instanceof L.Marker && k.getLatLng().equals([e.lat, e.lng])).openPopup();
   };
   etapListesi.appendChild(li);
 });
@@ -415,7 +551,7 @@ OLAYLAR.forEach((o, i) => {
     <span><span class="etap-ad">${o.ad}</span></span>`;
   li.onclick = () => {
     harita.flyTo([o.lat, o.lng], Math.max(harita.getZoom(), 9));
-    olayKatmani.getLayers()[i].openPopup();
+    olayKatmani.getLayers().find(k => k instanceof L.Marker && k.getLatLng().equals([o.lat, o.lng])).openPopup();
   };
   olayListesi.appendChild(li);
 });
