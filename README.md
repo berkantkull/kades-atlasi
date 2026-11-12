@@ -2,7 +2,7 @@
 
 **II. Ramses'in MÖ ~1274 Kadeş Seferi — Etkileşimli Dijital Harita (Prototip v0.2)**
 
-Kadeş Atlası, tarihi dijital teknolojilerle buluşturan bir **dijital beşeriyat** (digital humanities) projesidir: Mısır kaynaklarının (Pentaur Şiiri, Rapor ve tapınak kabartmaları) izdiğiği Kadeş sefer güzergâhını etkileşimli bir harita üzerinde sunar.
+Kadeş Atlası, tarihi dijital teknolojilerle buluşturan bir **dijital beşeriyat** (digital humanities) projesidir: Mısır kaynaklarının (Pentaur Şiiri, Rapor ve tapınak kabartmaları) izlediği Kadeş sefer güzergâhını etkileşimli bir harita üzerinde sunar.
 
 Proje üç modül olarak tasarlanmıştır; bu depo **1. Modül — Etkileşimli Sefer Haritası**'nın prototipini içerir:
 
